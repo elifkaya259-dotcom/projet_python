@@ -67,7 +67,14 @@ ROOM_DEFS = [
         "rarity": 1,
         "doors": [Direction.TOP, Direction.RIGHT],
     },
-
+    
+    {
+        "name": "Shop",
+        "color": "yellow",
+        "cost": 1,
+        "rarity": 2,
+        "doors": [Direction.TOP, Direction.BOTTOM, Direction.LEFT, Direction.RIGHT],
+    },
     # Pièces violettes : chambres (un peu rares)
     {
         "name": "Bedroom",

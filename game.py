@@ -108,12 +108,14 @@ class Game:
     # ---------------------------------------------------
     def draw_inventory(self):
         font = pygame.font.SysFont("arial", 22)
-        txt = font.render(
-            f"Steps: {self.inventory.steps} | Keys: {self.inventory.keys} | "
-            f"Gems: {self.inventory.gems} | Dice: {self.inventory.dice}",
-            True,
-            WHITE
+        status_text = (
+            f"Steps: {self.inventory.steps} | "
+            f"Keys: {self.inventory.keys} | "
+            f"Gems: {self.inventory.gems} | "
+            f"Dice: {self.inventory.dice} | "
+            f"Coins: {self.inventory.coins}"
         )
+        txt = font.render(status_text, True, WHITE)
         self.screen.blit(txt, (10, HEIGHT - 40))
 
     # ---------------------------------------------------

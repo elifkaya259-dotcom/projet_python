@@ -99,7 +99,10 @@ class Room:
         de trouver quelque chose : nourriture, gemmes, clés, dés, objets permanents.
         On fait un truc simple mais conforme à l'énoncé.
         """
-
+        # Effet spécial : salle de magasin
+        if self.name == "Shop":
+            self.apply_shop_effect(inventory)
+            return
         # chance de base de trouver quelque chose
         base = 0.15
         if self.color == "green":
@@ -138,8 +141,9 @@ class Room:
             return
 
         # Sinon : objet consommable
-        options = ["gem", "key", "dice", "food"]
-        weights = [3, 3, 2, 4]
+        options = ["gem", "key", "dice", "food", "coin"]
+        weights = [2, 2, 1, 3, 2]  # coin a à peu près la même chance que la nourriture
+
 
         # Détecteur de métaux : plus de clés et de gemmes
         if inventory.has_metal_detector:
@@ -162,6 +166,10 @@ class Room:
         elif loot == "dice":
             inventory.dice += 1
             print(f"Vous trouvez un dé dans {self.name}.")
+        elif loot == "coin":
+            amount = rng.randint(1, 3)
+            inventory.add_coins(amount)
+            print(f"Vous trouvez {amount} pièce(s) dans {self.name}.")
         else:  # nourriture -> on choisit un type
             food_roll = rng.random()
             if food_roll < 0.2:
@@ -179,6 +187,39 @@ class Room:
             else:
                 inventory.add_steps(25)  # repas
                 print("Vous mangez un repas complet (+25 pas).")
+    def apply_shop_effect(self, inventory):
+        """
+        Magasin simple :
+        - 3 pièces => 1 clé
+        - 2 pièces => 10 pas
+
+        On dépense toutes les pièces possibles dans cet ordre :
+        d'abord les clés, puis les pas.
+        """
+        something_bought = False
+
+        # Acheter des clés d'abord
+        if inventory.coins >= 3:
+            nb_keys = inventory.coins // 3
+            spent = nb_keys * 3
+            inventory.use_coins(spent)
+            inventory.keys += nb_keys
+            print(f"Vous dépensez {spent} pièce(s) au magasin et achetez {nb_keys} clé(s).")
+            something_bought = True
+
+        # Puis utiliser les pièces restantes en pas
+        if inventory.coins >= 2:
+            nb_packs = inventory.coins // 2
+            spent = nb_packs * 2
+            inventory.use_coins(spent)
+            gained_steps = nb_packs * 10
+            inventory.steps += gained_steps
+            print(f"Vous dépensez {spent} pièce(s) au magasin et gagnez {gained_steps} pas.")
+            something_bought = True
+
+        if not something_bought:
+            print("Le magasin est silencieux : vous n'avez pas assez de pièces (3 pour une clé, 2 pour 10 pas).")
+
 
 
 # ------------------------------------------------------
@@ -190,6 +231,7 @@ class Inventory:
         self.steps = 70
         self.keys = 0
         self.gems = 2
+        self.coins = 0
         self.dice = 0
 
         # permanents
@@ -202,6 +244,19 @@ class Inventory:
 
     def add_steps(self, n):
         self.steps += n
+
+    def add_coins(self, amount: int):
+        """Ajoute des pièces au joueur."""
+        if amount > 0:
+            self.coins += amount
+
+    def use_coins(self, amount: int) -> bool:
+        """Tente de dépenser des pièces, renvoie True si c'est possible."""
+        if amount <= self.coins:
+            self.coins -= amount
+            return True
+        return False
+
 
 
 # ------------------------------------------------------
